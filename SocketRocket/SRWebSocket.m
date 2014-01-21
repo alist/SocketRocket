@@ -298,8 +298,9 @@ static __strong NSData *CRLFCRLF;
     CRLFCRLF = [[NSData alloc] initWithBytes:"\r\n\r\n" length:4];
 }
 
-- (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols;
+- (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols streamProperties:(NSDictionary*)streamProperties;
 {
+    
     self = [super init];
     if (self) {
         assert(request.URL);
@@ -307,11 +308,18 @@ static __strong NSData *CRLFCRLF;
         _urlRequest = request;
         
         _requestedProtocols = [protocols copy];
+        _streamProperties = [streamProperties copy];
         
         [self _SR_commonInit];
     }
     
     return self;
+    
+}
+
+- (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols;
+{
+    return [self initWithURLRequest:request protocols:protocols streamProperties:nil];
 }
 
 - (id)initWithURLRequest:(NSURLRequest *)request;
@@ -566,6 +574,12 @@ static __strong NSData *CRLFCRLF;
     CFWriteStreamRef writeStream = NULL;
     
     CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)host, port, &readStream, &writeStream);
+    
+    // Setup connections to be VOIP connections
+    for(NSString * propertyKey in self.streamProperties){
+        CFReadStreamSetProperty(readStream, (__bridge CFStringRef) propertyKey, (__bridge CFStringRef)([self.streamProperties valueForKey:propertyKey]));
+        CFWriteStreamSetProperty(writeStream, (__bridge CFStringRef)propertyKey, (__bridge CFStringRef)([self.streamProperties valueForKey:propertyKey]));
+    }
     
     _outputStream = CFBridgingRelease(writeStream);
     _inputStream = CFBridgingRelease(readStream);

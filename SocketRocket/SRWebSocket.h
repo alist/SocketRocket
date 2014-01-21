@@ -41,11 +41,18 @@ extern NSString *const SRWebSocketErrorDomain;
 @property (nonatomic, readonly) SRReadyState readyState;
 @property (nonatomic, readonly, retain) NSURL *url;
 
+
 // This returns the negotiated protocol.
 // It will be nil until after the handshake completes.
 @property (nonatomic, readonly, copy) NSString *protocol;
 
+//These CFStream properties for CFStream Property Keys via
+//CFReadStreamSetProperty and CFWriteStreamSetProperty
+//set in init, or you're too late
+@property (nonatomic, readonly) NSDictionary * streamProperties;
+
 // Protocols should be an array of strings that turn into Sec-WebSocket-Protocol.
+- (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols streamProperties:(NSDictionary*)streamProperties;
 - (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols;
 - (id)initWithURLRequest:(NSURLRequest *)request;
 
