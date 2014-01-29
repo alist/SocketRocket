@@ -298,7 +298,7 @@ static __strong NSData *CRLFCRLF;
     CRLFCRLF = [[NSData alloc] initWithBytes:"\r\n\r\n" length:4];
 }
 
-- (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols streamProperties:(NSDictionary*)streamProperties;
+- (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols inputStreamProperties:(NSDictionary*)inputStreamProperties outputStreamProperties:(NSDictionary*)outputStreamProperties;
 {
     
     self = [super init];
@@ -308,7 +308,8 @@ static __strong NSData *CRLFCRLF;
         _urlRequest = request;
         
         _requestedProtocols = [protocols copy];
-        _streamProperties = [streamProperties copy];
+        _inputStreamProperties = [inputStreamProperties copy];
+        _outputStreamProperties = [outputStreamProperties copy];
         
         [self _SR_commonInit];
     }
@@ -319,7 +320,7 @@ static __strong NSData *CRLFCRLF;
 
 - (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols;
 {
-    return [self initWithURLRequest:request protocols:protocols streamProperties:nil];
+    return [self initWithURLRequest:request protocols:protocols inputStreamProperties:nil outputStreamProperties:nil];
 }
 
 - (id)initWithURLRequest:(NSURLRequest *)request;
@@ -575,15 +576,18 @@ static __strong NSData *CRLFCRLF;
     
     CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)host, port, &readStream, &writeStream);
     
-    // Setup connections to be VOIP connections
-    for(NSString * propertyKey in self.streamProperties){
-        CFReadStreamSetProperty(readStream, (__bridge CFStringRef) propertyKey, (__bridge CFStringRef)([self.streamProperties valueForKey:propertyKey]));
-        CFWriteStreamSetProperty(writeStream, (__bridge CFStringRef)propertyKey, (__bridge CFStringRef)([self.streamProperties valueForKey:propertyKey]));
-    }
     
     _outputStream = CFBridgingRelease(writeStream);
     _inputStream = CFBridgingRelease(readStream);
+
+    // Setup connections to be VOIP connections
+    for(NSString * propertyKey in self.inputStreamProperties){
+        [_inputStream setProperty:[self.inputStreamProperties valueForKey:propertyKey] forKey:propertyKey];
+    }
     
+    for(NSString * propertyKey in self.outputStreamProperties){
+        [_outputStream setProperty:[self.outputStreamProperties valueForKey:propertyKey] forKey:propertyKey];
+    }
     
     if (_secure) {
         NSMutableDictionary *SSLOptions = [[NSMutableDictionary alloc] init];

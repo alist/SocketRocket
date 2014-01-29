@@ -49,10 +49,14 @@ extern NSString *const SRWebSocketErrorDomain;
 //These CFStream properties for CFStream Property Keys via
 //CFReadStreamSetProperty and CFWriteStreamSetProperty
 //set in init, or you're too late
-@property (nonatomic, readonly) NSDictionary * streamProperties;
+
+//for example, for voip, only set on input stream not output stream
+@property (nonatomic, readonly) NSDictionary * outputStreamProperties;
+@property (nonatomic, readonly) NSDictionary * inputStreamProperties;
+
 
 // Protocols should be an array of strings that turn into Sec-WebSocket-Protocol.
-- (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols streamProperties:(NSDictionary*)streamProperties;
+- (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols inputStreamProperties:(NSDictionary*)streamProperties outputStreamProperties:(NSDictionary*)streamProperties;
 - (id)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray *)protocols;
 - (id)initWithURLRequest:(NSURLRequest *)request;
 
